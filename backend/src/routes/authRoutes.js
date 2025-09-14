@@ -69,9 +69,19 @@ routes.post("/register", async (req, res) => {
   }
 });
 
+routes.post("/login", async (req, res) => {
+  const { username, password } = req.body;
 
-routes.post("/login", (req, res) => {
-  res.send("Login User");
+  //checking for missing fields
+  if (!username || !password) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
+  //checking if user exists
+  const user = User.findOne({ username });
+  if (!user) {
+    return res.status(400).json({ message: "User does not exist" });
+  }
 });
 
 export default routes;
