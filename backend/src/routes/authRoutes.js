@@ -70,17 +70,39 @@ routes.post("/register", async (req, res) => {
 });
 
 routes.post("/login", async (req, res) => {
-  const { username, password } = req.body;
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      res.status(400).json({ message: "All fields are required" });
+    }
 
-  //checking for missing fields
-  if (!username || !password) {
-    return res.status(400).json({ message: "All fields are required" });
-  }
+    //checking if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      res.status(400).json({ message: "Invalide Credentials" });
+    }
 
-  //checking if user exists
-  const user = User.findOne({ username });
-  if (!user) {
-    return res.status(400).json({ message: "User does not exist" });
+    //checking password
+    const isPasswordCorrect = await user.comparePassword(password);
+    if (!isPasswordCorrect) {
+      res.status(400).json({ message: "Invalide Credentials" });
+    }
+
+    //genertating token
+    const token = generateToken(user._id);
+    res.status(200).json({
+      message: "Login successful",
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        profileImage: user.profileImage,
+      },
+    });
+  } catch (error) {
+    console.log("Error in login route: ", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
