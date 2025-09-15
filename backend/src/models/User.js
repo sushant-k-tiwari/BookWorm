@@ -2,33 +2,36 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import validator from "validator";
 
-const userSchema = new mongoose.Schema({
-  username: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    //validator to validate email
-    validate(value) {
-      if (!validator.isEmail(value)) {
-        throw new Error("Invalid email" + value);
-      }
+const userSchema = new mongoose.Schema(
+  {
+    username: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      //validator to validate email
+      validate(value) {
+        if (!validator.isEmail(value)) {
+          throw new Error("Invalid email" + value);
+        }
+      },
+    },
+    password: {
+      type: String,
+      required: true,
+      minlength: 8,
+    },
+    profileImage: {
+      type: String,
+      default: "",
     },
   },
-  password: {
-    type: String,
-    required: true,
-    minlength: 8,
-  },
-  profileImage: {
-    type: String,
-    default: "",
-  },
-});
+  { timestamps: true }
+);
 
 //hashing password beforing saving it
 userSchema.pre("save", async function (next) {
@@ -43,7 +46,6 @@ userSchema.pre("save", async function (next) {
 userSchema.methods.comparePassword = async function (userPassword) {
   return await bcrypt.compare(userPassword, this.password);
 };
-
 
 const User = mongoose.model("User", userSchema);
 
